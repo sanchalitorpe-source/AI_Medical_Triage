@@ -1,0 +1,10 @@
+name: medical-triage-env
+description: AI Medical Triage Simulation Environment
+version: 1.0
+
+entrypoint: app.env:MedicalTriageEnv
+
+tasks:
+  - easy
+  - medium
+  - hard
