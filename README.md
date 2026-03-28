@@ -19,3 +19,5 @@ Simulates medical triage decisions based on symptoms.
 - Hard: critical cases
 
 ## Run
+=======
+# AI_Medical_Triage
