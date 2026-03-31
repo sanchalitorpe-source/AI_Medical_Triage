@@ -1,99 +1,67 @@
-from fastapi import FastAPI, Body
-
+from fastapi import FastAPI
 from app.env import MedicalTriageEnv
 from app.tasks import TASKS
 from app.grader import grade
 from baseline.run_baseline import run_baseline
-from app.models import Action
+from app.models import ResetResponse, TaskResponse, BaselineResponse, GraderResponse
 
-app = FastAPI(
-    title="Clinical Triage OpenEnv",
-    description="Deterministic RL environment for medical triage decision-making",
-    version="1.0"
-)
+app = FastAPI(title="Medical Triage OpenEnv API")
 
 env = MedicalTriageEnv()
 
 
-# -------------------------
-# Root Endpoint
-# -------------------------
+# ✅ Home (for browser)
 @app.get("/")
 def home():
-    return {"message": "Medical Triage API is running"}
+    return {
+        "message": "Medical Triage API is running",
+        "docs": "/docs",
+        "endpoints": ["/reset", "/step", "/tasks", "/baseline", "/grader"]
+    }
 
 
-# -------------------------
-# Health Check
-# -------------------------
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-
-# -------------------------
-# Reset Environment
-# -------------------------
-@app.get("/reset")
+# ✅ REQUIRED: POST reset (OpenEnv expects this)
+@app.post("/reset", response_model=ResetResponse)
 def reset():
     obs = env.reset()
-    return obs.dict()   # IMPORTANT
+    return obs
 
 
-# -------------------------
-# Step Endpoint (REQUIRED)
-# -------------------------
+# (optional GET for manual testing)
+@app.get("/reset")
+def reset_get():
+    return env.reset()
+
+
+# ✅ REQUIRED: step() endpoint (IMPORTANT for OpenEnv)
 @app.post("/step")
-def step(action: Action = Body(...)):
-    obs, reward, done, info = env.step(action)
-
-    if obs:
-        return {
-            "symptoms": obs.symptoms,
-            "duration": obs.duration,
-            "age": obs.age,
-            "history": obs.history,
-            "step": obs.step,
-            "reward": reward.value,
-            "done": done
-        }
-    else:
-        return {
-            "symptoms": [],
-            "duration": "",
-            "age": 0,
-            "history": [],
-            "step": 0,
-            "reward": reward.value,
-            "done": done
-        }
+def step(action: dict):
+    observation, reward, done, info = env.step(action)
+    return {
+        "observation": observation,
+        "reward": reward,
+        "done": done,
+        "info": info
+    }
 
 
-# -------------------------
-# Tasks Endpoint
-# -------------------------
-@app.get("/tasks")
+# ✅ Tasks endpoint
+@app.get("/tasks", response_model=TaskResponse)
 def get_tasks():
     return {"tasks": TASKS}
 
 
-# -------------------------
-# Baseline Endpoint
-# -------------------------
-@app.get("/baseline")
+# ✅ Baseline endpoint
+@app.get("/baseline", response_model=BaselineResponse)
 def baseline():
     score = run_baseline()
     return {"baseline_score": score}
 
 
-# -------------------------
-# Grader Endpoint
-# -------------------------
-@app.post("/grader")
-def grader_endpoint(total_reward: float):
-    score = grade(total_reward)
-
+# ✅ Grader endpoint
+@app.get("/grader", response_model=GraderResponse)
+def grader():
     return {
-        "score": score,
-        "range": "0.0 to 1.0"
+        "message": "Grader active",
+        "score_range": "0.0 to 1.0"
     }
