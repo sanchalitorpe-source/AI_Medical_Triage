@@ -1,17 +1,10 @@
-from fastapi import FastAPI
-from typing import Dict, Any
+from fastapi import FastAPI, Body
 
 from app.env import MedicalTriageEnv
 from app.tasks import TASKS
 from app.grader import grade
 from baseline.run_baseline import run_baseline
-from app.models import (
-    ResetResponse,
-    TaskResponse,
-    BaselineResponse,
-    GraderResponse,
-    Action,
-)
+from app.models import Action
 
 app = FastAPI(
     title="Clinical Triage OpenEnv",
@@ -25,13 +18,13 @@ env = MedicalTriageEnv()
 # -------------------------
 # Root Endpoint
 # -------------------------
-@app.get("/", response_model=dict)
+@app.get("/")
 def home():
     return {"message": "Medical Triage API is running"}
 
 
 # -------------------------
-# Health Check (Optional but useful)
+# Health Check
 # -------------------------
 @app.get("/health")
 def health():
@@ -41,18 +34,15 @@ def health():
 # -------------------------
 # Reset Environment
 # -------------------------
-@app.get("/reset", response_model=ResetResponse)
+@app.get("/reset")
 def reset():
     obs = env.reset()
-    return obs
+    return obs.dict()   # IMPORTANT
 
 
 # -------------------------
 # Step Endpoint (REQUIRED)
 # -------------------------
-from fastapi import Body
-from app.models import Action
-
 @app.post("/step")
 def step(action: Action = Body(...)):
     obs, reward, done, info = env.step(action)
@@ -78,10 +68,11 @@ def step(action: Action = Body(...)):
             "done": done
         }
 
+
 # -------------------------
 # Tasks Endpoint
 # -------------------------
-@app.get("/tasks", response_model=TaskResponse)
+@app.get("/tasks")
 def get_tasks():
     return {"tasks": TASKS}
 
@@ -89,7 +80,7 @@ def get_tasks():
 # -------------------------
 # Baseline Endpoint
 # -------------------------
-@app.get("/baseline", response_model=BaselineResponse)
+@app.get("/baseline")
 def baseline():
     score = run_baseline()
     return {"baseline_score": score}
@@ -98,7 +89,7 @@ def baseline():
 # -------------------------
 # Grader Endpoint
 # -------------------------
-@app.post("/grader", response_model=GraderResponse)
+@app.post("/grader")
 def grader_endpoint(total_reward: float):
     score = grade(total_reward)
 
