@@ -1,10 +1,71 @@
 name: medical-triage-env
-description: AI Medical Triage Simulation Environment
-version: 1.0
+description: Deterministic clinical triage decision-making environment for RL agents
+version: 1.0.0
 
 entrypoint: app.env:MedicalTriageEnv
 
+metadata:
+  author: Sanchali Torpe
+  category: healthcare
+  difficulty: medium
+  tags:
+    - triage
+    - healthcare
+    - decision-making
+    - reinforcement-learning
+
+api:
+  endpoints:
+    reset: /reset
+    step: /step
+    tasks: /tasks
+    grader: /grader
+
+observation_space:
+  type: object
+  properties:
+    symptoms:
+      type: array
+      items:
+        type: string
+    duration:
+      type: string
+    age:
+      type: integer
+    history:
+      type: array
+      items:
+        type: string
+    step:
+      type: integer
+
+action_space:
+  type: object
+  properties:
+    severity:
+      type: string
+      enum: [low, medium, high, emergency]
+    action:
+      type: string
+      enum: [self_care, visit_doctor, urgent_care, go_to_er]
+
+reward:
+  type: float
+  range: [-1.0, 1.0]
+  description: >
+    Reward is based on correctness of severity and action.
+    Heavy penalty for underestimating severity, smaller penalty for overestimation.
+    Bonus for improving decision after additional information.
+
 tasks:
-  - easy
-  - medium
-  - hard
+  - id: easy
+    description: Simple cases with clear symptoms and obvious decisions
+    difficulty: easy
+
+  - id: medium
+    description: Cases with mixed symptoms and risk factors requiring reasoning
+    difficulty: medium
+
+  - id: hard
+    description: Multi-step cases requiring decision updates after new information
+    difficulty: hard

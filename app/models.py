@@ -1,7 +1,10 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Literal, Optional, Dict, Any
 
 
+# -------------------------
+# Core Models
+# -------------------------
 class Observation(BaseModel):
     symptoms: List[str]
     duration: str
@@ -11,24 +14,30 @@ class Observation(BaseModel):
 
 
 class Action(BaseModel):
-    severity: str
-    action: str
+    severity: Literal["low", "medium", "high", "emergency"]
+    action: Literal["self_care", "visit_doctor", "urgent_care", "go_to_er"]
 
 
 class Reward(BaseModel):
     value: float
 
 
+# -------------------------
+# API Response Models
+# -------------------------
 class ResetResponse(BaseModel):
-    symptoms: List[str]
-    duration: str
-    age: int
-    history: List[str]
-    step: int
+    observation: Observation
+
+
+class StepResponse(BaseModel):
+    observation: Optional[Observation]
+    reward: float
+    done: bool
+    info: Dict[str, Any]
 
 
 class TaskResponse(BaseModel):
-    tasks: list
+    tasks: List[Dict[str, Any]]
 
 
 class BaselineResponse(BaseModel):
@@ -36,5 +45,5 @@ class BaselineResponse(BaseModel):
 
 
 class GraderResponse(BaseModel):
-    message: str
-    score_range: str
+    score: float
+    range: str

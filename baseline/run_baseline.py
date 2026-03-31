@@ -6,24 +6,40 @@ from app.grader import grade
 def simple_agent(obs):
     symptoms = [s.lower() for s in obs.symptoms]
 
-    if "chest pain" in symptoms and "shortness of breath" in symptoms:
-        return Action(severity="emergency", action="go_to_er")
+    # -------------------------
+    # STEP-AWARE LOGIC
+    # -------------------------
+    if obs.step == 1:
+        # Conservative initial guess
+        if "chest pain" in symptoms:
+            return Action(severity="high", action="urgent_care")
 
-    if "blurred vision" in symptoms:
-        return Action(severity="high", action="urgent_care")
+        if "fever" in symptoms:
+            return Action(severity="low", action="self_care")
 
-    if "vomiting" in symptoms:
-        return Action(severity="medium", action="doctor")
+        return Action(severity="medium", action="visit_doctor")
 
-    if "fever" in symptoms or "minor cut" in symptoms:
-        return Action(severity="low", action="self_care")
+    else:
+        # Final decision after more info
 
-    return Action(severity="medium", action="doctor")
+        if "chest pain" in symptoms and "shortness of breath" in symptoms:
+            return Action(severity="emergency", action="go_to_er")
+
+        if "blurred vision" in symptoms or "loss of vision" in symptoms:
+            return Action(severity="high", action="urgent_care")
+
+        if "vomiting" in symptoms and "dehydration" in symptoms:
+            return Action(severity="medium", action="visit_doctor")
+
+        if "fever" in symptoms or "minor cut" in symptoms:
+            return Action(severity="low", action="self_care")
+
+        return Action(severity="medium", action="visit_doctor")
 
 
 def run_episode(env):
     obs = env.reset()
-    total_reward = 0
+    total_reward = 0.0
     done = False
 
     while not done:
@@ -36,5 +52,8 @@ def run_episode(env):
 
 def run_baseline():
     env = MedicalTriageEnv()
-    scores = [run_episode(env) for _ in range(5)]
+
+    # Run multiple episodes for stability
+    scores = [run_episode(env) for _ in range(10)]
+
     return round(sum(scores) / len(scores), 3)
