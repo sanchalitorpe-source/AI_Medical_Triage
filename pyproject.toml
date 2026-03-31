@@ -1,0 +1,22 @@
+[project]
+name = "medical-triage-env"
+version = "1.0.0"
+description = "Deterministic clinical triage decision-making environment for RL agents"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+]
+
+[project.metadata]
+author = "Sanchali Torpe"
+category = "healthcare"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
