@@ -1,5 +1,5 @@
 CASES = [
-    # 🔴 EMERGENCY CASES
+    # 🔴 EMERGENCY
     {
         "initial_symptoms": ["chest pain"],
         "followup_info": ["shortness of breath"],
@@ -27,8 +27,7 @@ CASES = [
         "correct_severity": "emergency",
         "correct_action": "go_to_er"
     },
-
-    # 🟠 HIGH SEVERITY
+    # 🟠 HIGH
     {
         "initial_symptoms": ["headache"],
         "followup_info": ["blurred vision"],
@@ -56,7 +55,6 @@ CASES = [
         "correct_severity": "high",
         "correct_action": "urgent_care"
     },
-
     # 🟡 MEDIUM
     {
         "initial_symptoms": ["vomiting"],
@@ -85,7 +83,6 @@ CASES = [
         "correct_severity": "medium",
         "correct_action": "visit_doctor"
     },
-
     # 🟢 LOW
     {
         "initial_symptoms": ["fever"],
@@ -114,8 +111,7 @@ CASES = [
         "correct_severity": "low",
         "correct_action": "self_care"
     },
-
-    # ⚖️ MIXED / TRICKY (IMPORTANT FOR JUDGES)
+    # ⚖️ TRICKY
     {
         "initial_symptoms": ["fatigue"],
         "followup_info": ["weight loss"],
@@ -142,5 +138,45 @@ CASES = [
         "history": ["hypertension"],
         "correct_severity": "high",
         "correct_action": "urgent_care"
+    }
+]
+
+TASKS = [
+    {
+        "id": "easy",
+        "name": "Basic Triage",
+        "description": "Classify severity and action for simple, obvious symptom cases.",
+        "difficulty": "easy",
+        "objective": "Correctly identify severity and recommend appropriate action in straightforward scenarios.",
+        "evaluation": {
+            "criteria": ["Correct severity classification", "Correct action recommendation"],
+            "scoring": "Full score for exact match. Partial score if only severity is correct."
+        }
+    },
+    {
+        "id": "medium",
+        "name": "Conflicting Symptoms",
+        "description": "Handle cases with mixed or ambiguous signals requiring reasoning.",
+        "difficulty": "medium",
+        "objective": "Balance symptoms, duration, and patient history to make a safe decision.",
+        "evaluation": {
+            "criteria": ["Correct interpretation of risk factors", "Appropriate escalation level"],
+            "scoring": "Partial credit for safe but suboptimal decisions."
+        }
+    },
+    {
+        "id": "hard",
+        "name": "Multi-Step Critical Reasoning",
+        "description": "Update decisions after receiving additional clinical information.",
+        "difficulty": "hard",
+        "objective": "Refine initial triage decision using new information across steps.",
+        "evaluation": {
+            "criteria": [
+                "Improvement from initial to final decision",
+                "Correct final severity and action",
+                "Avoiding dangerous underestimation"
+            ],
+            "scoring": "Higher reward for correct updates. Heavy penalty for underestimation."
+        }
     }
 ]

@@ -1,67 +1,48 @@
 from fastapi import FastAPI
-from app.env import MedicalTriageEnv
-from app.tasks import TASKS
-from app.grader import grade
-from baseline.run_baseline import run_baseline
-from app.models import ResetResponse, TaskResponse, BaselineResponse, GraderResponse
+from typing import Dict, Any
 
-app = FastAPI(title="Medical Triage OpenEnv API")
+from app.env import MedicalTriageEnv
+from app.grader import grade
+from app.data import TASKS
+from app.models import (
+    Action, Observation,
+    StepResponse, TaskResponse, GraderResponse
+)
+
+app = FastAPI(title="Medical Triage OpenEnv", version="1.0.0")
 
 env = MedicalTriageEnv()
 
 
-# ✅ Home (for browser)
 @app.get("/")
-def home():
-    return {
-        "message": "Medical Triage API is running",
-        "docs": "/docs",
-        "endpoints": ["/reset", "/step", "/tasks", "/baseline", "/grader"]
-    }
+def root():
+    return {"status": "ok", "env": "medical-triage-env"}
 
 
-# ✅ REQUIRED: POST reset (OpenEnv expects this)
-@app.post("/reset", response_model=ResetResponse)
-def reset():
+@app.post("/reset", response_model=Observation)
+def reset() -> Observation:
     obs = env.reset()
     return obs
 
 
-# (optional GET for manual testing)
-@app.get("/reset")
-def reset_get():
-    return env.reset()
+@app.post("/step", response_model=StepResponse)
+def step(action: Action) -> StepResponse:
+    obs, reward, done, info = env.step(action)
+    return StepResponse(
+        observation=obs,
+        reward=reward.value,
+        done=done,
+        info=info
+    )
 
 
-# ✅ REQUIRED: step() endpoint (IMPORTANT for OpenEnv)
-@app.post("/step")
-def step(action: dict):
-    observation, reward, done, info = env.step(action)
-    return {
-        "observation": observation,
-        "reward": reward,
-        "done": done,
-        "info": info
-    }
-
-
-# ✅ Tasks endpoint
 @app.get("/tasks", response_model=TaskResponse)
-def get_tasks():
-    return {"tasks": TASKS}
+def get_tasks() -> TaskResponse:
+    return TaskResponse(tasks=TASKS)
 
 
-# ✅ Baseline endpoint
-@app.get("/baseline", response_model=BaselineResponse)
-def baseline():
-    score = run_baseline()
-    return {"baseline_score": score}
-
-
-# ✅ Grader endpoint
-@app.get("/grader", response_model=GraderResponse)
-def grader():
-    return {
-        "message": "Grader active",
-        "score_range": "0.0 to 1.0"
-    }
+@app.post("/grader", response_model=GraderResponse)
+def grader(action: Action) -> GraderResponse:
+    _, reward, _, _ = env.step(action)
+    score = grade(reward.value)
+    return GraderResponse(score=score, range="0.0 - 1.0")

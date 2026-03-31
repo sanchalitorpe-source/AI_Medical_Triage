@@ -2,9 +2,6 @@ from pydantic import BaseModel
 from typing import List, Literal, Optional, Dict, Any
 
 
-# -------------------------
-# Core Models
-# -------------------------
 class Observation(BaseModel):
     symptoms: List[str]
     duration: str
@@ -22,15 +19,8 @@ class Reward(BaseModel):
     value: float
 
 
-# -------------------------
-# API Response Models
-# -------------------------
-class ResetResponse(BaseModel):
-    observation: Observation
-
-
 class StepResponse(BaseModel):
-    observation: Optional[Observation]
+    observation: Optional[Observation] = None
     reward: float
     done: bool
     info: Dict[str, Any]
@@ -38,10 +28,6 @@ class StepResponse(BaseModel):
 
 class TaskResponse(BaseModel):
     tasks: List[Dict[str, Any]]
-
-
-class BaselineResponse(BaseModel):
-    baseline_score: float
 
 
 class GraderResponse(BaseModel):
