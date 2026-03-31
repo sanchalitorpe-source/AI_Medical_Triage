@@ -43,24 +43,40 @@ def health():
 # -------------------------
 @app.get("/reset", response_model=ResetResponse)
 def reset():
-    observation = env.reset()
-    return {"observation": observation}
+    obs = env.reset()
+    return obs
 
 
 # -------------------------
 # Step Endpoint (REQUIRED)
 # -------------------------
+from fastapi import Body
+from app.models import Action
+
 @app.post("/step")
-def step(action: Action) -> Dict[str, Any]:
-    observation, reward, done, info = env.step(action)
+def step(action: Action = Body(...)):
+    obs, reward, done, info = env.step(action)
 
-    return {
-        "observation": observation,
-        "reward": reward.value,
-        "done": done,
-        "info": info,
-    }
-
+    if obs:
+        return {
+            "symptoms": obs.symptoms,
+            "duration": obs.duration,
+            "age": obs.age,
+            "history": obs.history,
+            "step": obs.step,
+            "reward": reward.value,
+            "done": done
+        }
+    else:
+        return {
+            "symptoms": [],
+            "duration": "",
+            "age": 0,
+            "history": [],
+            "step": 0,
+            "reward": reward.value,
+            "done": done
+        }
 
 # -------------------------
 # Tasks Endpoint
