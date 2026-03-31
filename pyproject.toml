@@ -7,11 +7,11 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "pydantic",
+    "openenv-core>=0.2.0",
 ]
 
-[project.metadata]
-author = "Sanchali Torpe"
-category = "healthcare"
+[project.scripts]
+server = "server.app:main"
 
 [build-system]
 requires = ["setuptools", "wheel"]
@@ -19,4 +19,4 @@ build-backend = "setuptools.backends.legacy:build"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*"]
+include = ["app*", "server*"]
